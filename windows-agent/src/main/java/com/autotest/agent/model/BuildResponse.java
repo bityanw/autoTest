@@ -38,6 +38,11 @@ public class BuildResponse {
      */
     private String buildLog;
 
+    /**
+     * 制品URL
+     */
+    private String artifactUrl;
+
     @Data
     public static class ArtifactInfo {
         private String groupId;
