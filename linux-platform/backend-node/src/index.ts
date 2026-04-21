@@ -9,6 +9,9 @@ import taskRoutes from './routes/taskRoutes';
 import projectConfigRoutes from './routes/projectConfigRoutes';
 import reportRoutes from './routes/reportRoutes';
 
+// 服务
+import { projectConfigService } from './services/projectConfigService';
+
 // 加载环境变量
 dotenv.config();
 
@@ -39,11 +42,23 @@ app.get('/api/health', (req, res) => {
 // 错误处理
 app.use(errorHandler);
 
-// 启动服务
-app.listen(PORT, () => {
-  logger.info(`🚀 服务启动成功！`);
-  logger.info(`📍 地址: http://localhost:${PORT}`);
-  logger.info(`🌍 环境: ${process.env.NODE_ENV || 'development'}`);
-});
+// 初始化服务
+async function init() {
+  try {
+    await projectConfigService.init();
+    logger.info('✅ 项目配置服务初始化成功');
+  } catch (error) {
+    logger.error('❌ 项目配置服务初始化失败:', error);
+  }
+
+  // 启动服务
+  app.listen(PORT, () => {
+    logger.info('🚀 服务启动成功！');
+    logger.info(`📍 地址: http://localhost:${PORT}`);
+    logger.info(`🌍 环境: ${process.env.NODE_ENV || 'development'}`);
+  });
+}
+
+init();
 
 export default app;

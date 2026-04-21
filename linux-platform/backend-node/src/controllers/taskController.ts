@@ -6,6 +6,28 @@ import { taskService } from '../services/taskService';
 import { logger } from '../utils/logger';
 
 export class TaskController {
+  // 构建回调
+  async buildCallback(req: Request, res: Response) {
+    try {
+      const { buildId, status, buildLog, artifactUrl } = req.body;
+      logger.info(`收到构建回调: buildId=${buildId}, status=${status}`);
+      
+      // 这里可以根据需要更新任务状态
+      // 目前任务状态是在 taskService 内部管理的
+      
+      res.json({
+        success: true,
+        message: '回调已接收'
+      });
+    } catch (error: any) {
+      logger.error('处理构建回调失败:', error);
+      res.status(500).json({
+        success: false,
+        message: error.message
+      });
+    }
+  }
+
   // 创建任务
   async createTask(req: Request, res: Response) {
     try {
@@ -226,7 +248,7 @@ export class TaskController {
   // 测试邮件连接
   private async testEmailConnection(config: any): Promise<{ success: boolean; message: string }> {
     try {
-      const transporter = nodemailer.createTransporter({
+      const transporter = nodemailer.createTransport({
         host: config.host,
         port: config.port,
         secure: config.port === 465,

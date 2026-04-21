@@ -7,6 +7,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * 构建控制器
  */
@@ -37,6 +40,22 @@ public class BuildController {
             return BuildResponse.failed(buildId, "构建ID不存在");
         }
         return response;
+    }
+
+    /**
+     * 测试SVN连接
+     */
+    @PostMapping("/test-svn")
+    public Map<String, Object> testSvnConnection(@RequestBody Map<String, String> request) {
+        String svnPath = request.get("svnPath");
+        log.info("测试SVN连接: {}", svnPath);
+        
+        boolean success = buildService.testSvnConnection(svnPath);
+        
+        Map<String, Object> result = new HashMap<>();
+        result.put("success", success);
+        result.put("message", success ? "SVN连接成功" : "SVN连接失败");
+        return result;
     }
 
     /**

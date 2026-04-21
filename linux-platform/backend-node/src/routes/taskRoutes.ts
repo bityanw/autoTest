@@ -3,6 +3,9 @@ import { taskController } from '../controllers/taskController';
 
 const router = Router();
 
+// 构建回调
+router.post('/callback', (req, res) => taskController.buildCallback(req, res));
+
 // 创建任务
 router.post('/create', (req, res) => taskController.createTask(req, res));
 

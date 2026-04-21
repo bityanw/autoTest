@@ -221,4 +221,19 @@ public class BuildService {
     public BuildResponse getBuildStatus(String buildId) {
         return buildStatusMap.get(buildId);
     }
+
+    /**
+     * 测试SVN连接
+     */
+    public boolean testSvnConnection(String svnPath) {
+        try {
+            log.info("测试SVN连接: {}", svnPath);
+            String command = String.format("svn info \"%s\"", svnPath);
+            executeCommand(command, new File(svnPath).getParentFile());
+            return true;
+        } catch (Exception e) {
+            log.error("SVN连接测试失败: {}", e.getMessage());
+            return false;
+        }
+    }
 }
