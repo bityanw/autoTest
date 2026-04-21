@@ -1,5 +1,4 @@
-# 使用Eclipse Temurin镜像（Docker Hub限流时可用）
-FROM eclipse-temurin:8-jre-alpine
+FROM eclipse-temurin:8-jre
 
 # 安装curl和wget
 RUN apk add --no-cache curl wget

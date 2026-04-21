@@ -64,7 +64,7 @@
           <template #header>
             <div class="card-header">
               <span class="card-title">
-                <el-icon><PieChart /></el-icon>
+                <el-icon><PieChartIcon /></el-icon>
                 测试结果分布
               </span>
             </div>
@@ -195,7 +195,7 @@ import { useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { use } from 'echarts/core'
 import { CanvasRenderer } from 'echarts/renderers'
-import { LineChart, PieChart } from 'echarts/charts'
+import { LineChart, PieChart as EChartsPieChart } from 'echarts/charts'
 import {
   GridComponent,
   TooltipComponent,
@@ -210,7 +210,7 @@ import {
   Timer,
   TrendCharts,
   DataLine,
-  PieChart,
+  PieChart as PieChartIcon,
   Clock,
   ArrowRight,
   Lightning,
@@ -222,7 +222,7 @@ import {
 use([
   CanvasRenderer,
   LineChart,
-  PieChart,
+  EChartsPieChart,
   GridComponent,
   TooltipComponent,
   LegendComponent,

@@ -9,7 +9,7 @@ import { projectConfigService } from './projectConfigService';
 
 class TaskService {
   private tasks: Map<string, TestTask> = new Map();
-  private windowsAgentUrl = process.env.WINDOWS_AGENT_URL || 'http://192.168.1.100:8081';
+  private windowsAgentUrl = process.env.WINDOWS_AGENT_URL || 'http://localhost:18082';
   private docker = new Docker({ socketPath: '/var/run/docker.sock' });
 
   // 创建测试任务
@@ -47,13 +47,24 @@ class TaskService {
       task.status = 'building';
       this.updateTask(task);
 
+      // 获取传输配置
+      const transferMode = project.transfer?.mode || 'maven';
+      const mavenRepoUrl = transferMode === 'maven'
+        ? (project.transfer?.maven?.repoUrl || process.env.MAVEN_REPO_URL!)
+        : '';
+      const sharePath = transferMode === 'share'
+        ? project.transfer?.share?.path
+        : undefined;
+
       const buildRequest: BuildRequest = {
         svnPath: project.svn.path,
         svnBranch: project.svn.branch,
-        mavenRepoUrl: process.env.MAVEN_REPO_URL!,
+        mavenRepoUrl,
         projectName: task.projectName,
         buildType: project.build.type,
-        callbackUrl: `http://localhost:${process.env.PORT}/api/task/callback`
+        callbackUrl: `http://localhost:${process.env.PORT}/api/task/callback`,
+        transferMode,
+        sharePath
       };
 
       const buildResponse = await this.triggerBuild(buildRequest);
@@ -357,6 +368,52 @@ class TaskService {
   private updateTask(task: TestTask) {
     task.updateTime = new Date().toISOString();
     this.tasks.set(task.taskId, task);
+
+    // 通过WebSocket广播任务更新
+    try {
+      const { broadcast } = require('../index');
+      broadcast({
+        type: 'task_update',
+        taskId: task.taskId,
+        data: {
+          status: task.status,
+          progress: this.calculateProgress(task.status),
+          currentStep: this.getStepDescription(task.status),
+          updateTime: task.updateTime,
+          totalTests: task.totalTests,
+          passedTests: task.passedTests,
+          failedTests: task.failedTests
+        }
+      });
+    } catch (error) {
+      logger.error('广播任务更新失败:', error);
+    }
+  }
+
+  // 计算任务进度
+  private calculateProgress(status: string): number {
+    const progressMap: { [key: string]: number } = {
+      'pending': 0,
+      'building': 20,
+      'deploying': 50,
+      'testing': 70,
+      'success': 100,
+      'failed': 100
+    };
+    return progressMap[status] || 0;
+  }
+
+  // 获取步骤描述
+  private getStepDescription(status: string): string {
+    const stepMap: { [key: string]: string } = {
+      'pending': '等待开始',
+      'building': '正在编译代码',
+      'deploying': '正在部署应用',
+      'testing': '正在执行测试',
+      'success': '测试完成',
+      'failed': '测试失败'
+    };
+    return stepMap[status] || '未知状态';
   }
 
   // 获取任务

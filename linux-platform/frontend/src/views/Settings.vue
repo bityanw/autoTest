@@ -151,10 +151,10 @@
           <el-descriptions :column="2" border>
             <el-descriptions-item label="系统版本">v1.0.0</el-descriptions-item>
             <el-descriptions-item label="构建时间">2026-03-25</el-descriptions-item>
-            <el-descriptions-item label="后端版本">Spring Boot 2.7</el-descriptions-item>
+            <el-descriptions-item label="后端版本">Node.js 18+</el-descriptions-item>
             <el-descriptions-item label="前端版本">Vue 3.3</el-descriptions-item>
             <el-descriptions-item label="测试框架">Playwright 1.40</el-descriptions-item>
-            <el-descriptions-item label="JDK版本">1.8+</el-descriptions-item>
+            <el-descriptions-item label="运行环境">Node.js 18+</el-descriptions-item>
           </el-descriptions>
 
           <el-divider />
@@ -197,6 +197,7 @@ import {
   Connection,
   Promotion
 } from '@element-plus/icons-vue'
+import taskApi from '../api/task'
 
 const activeMenu = ref('agent')
 
@@ -209,7 +210,7 @@ const menuItems = [
 
 const config = reactive({
   agent: {
-    url: 'http://192.168.1.100:8081',
+    url: 'http://192.168.1.64:18082',
     timeout: 30
   },
   maven: {
@@ -237,16 +238,16 @@ const testConnection = async (type) => {
   try {
     ElMessage.info('正在测试连接...')
 
-    let config = {}
+    let testConfig = {}
     if (type === 'agent') {
-      config = { url: agentConfig.url }
+      testConfig = { url: config.agent.url }
     } else if (type === 'docker') {
-      config = { socketPath: '/var/run/docker.sock' }
+      testConfig = { socketPath: '/var/run/docker.sock' }
     } else if (type === 'maven') {
-      config = { url: mavenConfig.url }
+      testConfig = { url: config.maven.url }
     }
 
-    const response = await taskApi.testConnection(type, config)
+    const response = await taskApi.testConnection(type, testConfig)
 
     if (response.data.success) {
       connectionStatus[type] = true

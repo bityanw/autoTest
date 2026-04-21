@@ -79,6 +79,35 @@
             </el-radio-group>
           </el-form-item>
         </el-card>
+
+        <el-card class="form-section">
+          <template #header>
+            <div class="section-header">
+              <span>Transfer Config</span>
+            </div>
+          </template>
+
+          <el-form-item label="Transfer Mode">
+            <el-radio-group v-model="formData.transfer.mode">
+              <el-radio label="maven">Maven</el-radio>
+              <el-radio label="share">File Share</el-radio>
+            </el-radio-group>
+          </el-form-item>
+
+          <el-form-item v-if="formData.transfer.mode === 'maven'" label="Maven Repo URL">
+            <el-input
+              v-model="formData.transfer.maven.repoUrl"
+              placeholder="http://nexus.company.com/repository/maven-releases/"
+            />
+          </el-form-item>
+
+          <el-form-item v-if="formData.transfer.mode === 'share'" label="Share Path">
+            <el-input
+              v-model="formData.transfer.share.path"
+              placeholder="\\\\192.168.1.100\\share\\builds"
+            />
+          </el-form-item>
+        </el-card>
         
         <el-card class="form-section">
           <template #header>
@@ -275,7 +304,7 @@ import { ElMessage, ElMessageBox } from 'element-plus';
 import { Plus, Search, Delete } from '@element-plus/icons-vue';
 import axios from 'axios';
 
-const API_BASE = 'http://localhost:3000/api';
+const API_BASE = '/api';
 
 // 数据
 const projects = ref([]);
@@ -286,7 +315,7 @@ const saving = ref(false);
 const deleting = ref(false);
 
 // 表单数据
-const formData = reactive({
+const createDefaultFormData = () => ({
   name: '',
   description: '',
   status: 'active',
@@ -308,6 +337,15 @@ const formData = reactive({
       buildDir: 'dist'
     }
   },
+  transfer: {
+    mode: 'maven',
+    maven: {
+      repoUrl: ''
+    },
+    share: {
+      path: ''
+    }
+  },
   deploy: {
     type: 'docker',
     docker: {
@@ -327,6 +365,71 @@ const formData = reactive({
     version: '1.0.0'
   }
 });
+
+const formData = reactive(createDefaultFormData());
+
+const applyFormData = (project = {}) => {
+  const defaults = createDefaultFormData();
+
+  Object.assign(formData, {
+    ...defaults,
+    ...project,
+    svn: {
+      ...defaults.svn,
+      ...(project.svn || {})
+    },
+    build: {
+      ...defaults.build,
+      ...(project.build || {}),
+      maven: {
+        ...defaults.build.maven,
+        ...(project.build?.maven || {})
+      },
+      npm: {
+        ...defaults.build.npm,
+        ...(project.build?.npm || {})
+      }
+    },
+    transfer: {
+      ...defaults.transfer,
+      ...(project.transfer || {}),
+      maven: {
+        ...defaults.transfer.maven,
+        ...(project.transfer?.maven || {})
+      },
+      share: {
+        ...defaults.transfer.share,
+        ...(project.transfer?.share || {})
+      }
+    },
+    deploy: {
+      ...defaults.deploy,
+      ...(project.deploy || {}),
+      docker: {
+        ...defaults.deploy.docker,
+        ...(project.deploy?.docker || {})
+      }
+    },
+    environments: {
+      dev: {
+        ...defaults.environments.dev,
+        ...(project.environments?.dev || {})
+      },
+      test: {
+        ...defaults.environments.test,
+        ...(project.environments?.test || {})
+      },
+      prod: {
+        ...defaults.environments.prod,
+        ...(project.environments?.prod || {})
+      }
+    },
+    artifact: {
+      ...defaults.artifact,
+      ...(project.artifact || {})
+    }
+  });
+};
 
 // 表单验证规则
 const rules = {
@@ -376,7 +479,7 @@ const loadProjects = async () => {
 
 const selectProject = (project) => {
   selectedProject.value = project;
-  Object.assign(formData, JSON.parse(JSON.stringify(project)));
+  applyFormData(JSON.parse(JSON.stringify(project)));
 };
 
 const handleCreateProject = () => {
@@ -437,7 +540,17 @@ const handleSave = async () => {
     
     saving.value = true;
     try {
-      const data = { ...formData };
+      if (formData.transfer.mode === 'maven' && !formData.transfer.maven.repoUrl?.trim()) {
+        ElMessage.warning('请输入Maven私服地址');
+        return;
+      }
+
+      if (formData.transfer.mode === 'share' && !formData.transfer.share.path?.trim()) {
+        ElMessage.warning('请输入文件共享路径');
+        return;
+      }
+
+      const data = JSON.parse(JSON.stringify(formData));
       
       if (isNewProject.value) {
         const response = await axios.post(`${API_BASE}/project-config/create`, data);
@@ -467,7 +580,7 @@ const handleSave = async () => {
 
 const handleReset = () => {
   if (selectedProject.value?.id) {
-    Object.assign(formData, JSON.parse(JSON.stringify(selectedProject.value)));
+    applyFormData(JSON.parse(JSON.stringify(selectedProject.value)));
   } else {
     handleCreateProject();
   }

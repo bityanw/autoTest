@@ -1,6 +1,8 @@
 import express, { Express } from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
+import { createServer } from 'http';
+import { WebSocketServer, WebSocket } from 'ws';
 import { logger } from './utils/logger';
 import { errorHandler } from './utils/errorHandler';
 
@@ -16,7 +18,44 @@ import { projectConfigService } from './services/projectConfigService';
 dotenv.config();
 
 const app: Express = express();
-const PORT = process.env.PORT || 8080;
+const PORT = process.env.PORT || 18681;
+
+// 创建HTTP服务器
+const server = createServer(app);
+
+// 创建WebSocket服务器
+const wss = new WebSocketServer({ server, path: '/ws' });
+
+// WebSocket连接管理
+const clients = new Set<WebSocket>();
+
+wss.on('connection', (ws: WebSocket) => {
+  logger.info('WebSocket客户端已连接');
+  clients.add(ws);
+
+  ws.on('close', () => {
+    logger.info('WebSocket客户端已断开');
+    clients.delete(ws);
+  });
+
+  ws.on('error', (error) => {
+    logger.error('WebSocket错误:', error);
+    clients.delete(ws);
+  });
+
+  // 发送欢迎消息
+  ws.send(JSON.stringify({ type: 'connected', message: '连接成功' }));
+});
+
+// 广播消息给所有客户端
+export const broadcast = (message: any) => {
+  const data = JSON.stringify(message);
+  clients.forEach((client) => {
+    if (client.readyState === WebSocket.OPEN) {
+      client.send(data);
+    }
+  });
+};
 
 // 中间件
 app.use(cors());

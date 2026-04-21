@@ -4,7 +4,8 @@
 
 ```
 linux-platform/
-├── backend-node/          # Node.js后端
+├── backend-node/          # Node.js后端 (主要使用)
+├── backend/               # Spring Boot后端 (备用)
 ├── frontend/              # Vue3前端
 ├── ai-test-generator/     # AI测试脚本生成器
 ├── docker/                # Docker配置
@@ -31,7 +32,7 @@ linux-platform/
 
 ### 方式二：手动启动
 
-**后端（Node.js）**:
+**后端（Node.js版本 - 推荐）**:
 ```bash
 cd backend-node
 npm install
@@ -40,6 +41,13 @@ cp .env.example .env
 npm run dev  # 开发模式
 # 或
 npm run build && npm start  # 生产模式
+```
+
+**后端（Java版本 - 备用）**:
+```bash
+cd backend
+mvn clean package
+java -jar target/test-platform-1.0.0.jar
 ```
 
 **前端**:
@@ -67,6 +75,24 @@ MAVEN_REPO_URL=http://nexus.company.com/repository/maven-releases/
 
 # 环境
 NODE_ENV=production
+```
+
+### Java后端配置（备用）
+
+编辑 `backend/src/main/resources/application.yml`:
+
+```yaml
+windows:
+  agent:
+    url: http://192.168.1.100:8081  # Windows Agent地址
+
+maven:
+  repo:
+    url: http://nexus.company.com/repository/maven-releases/
+
+svn:
+  project:
+    path: C:/svn/project
 ```
 
 详细配置请查看 [配置文档](../docs/configuration.md)
@@ -174,6 +200,9 @@ tail -f backend-node/logs/error.log
 
 # PM2日志
 pm2 logs test-platform
+
+# Java后端日志（如果使用）
+tail -f backend/logs/platform.log
 
 # 前端日志
 tail -f frontend/logs/frontend.log

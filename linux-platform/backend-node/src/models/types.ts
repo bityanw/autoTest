@@ -26,6 +26,17 @@ export interface ProjectConfig {
     };
   };
 
+  // 传输配置
+  transfer?: {
+    mode: 'maven' | 'share'; // 传输方式
+    maven?: {
+      repoUrl: string; // Maven私服地址
+    };
+    share?: {
+      path: string; // 文件共享路径，如 \\192.168.1.100\share\builds
+    };
+  };
+
   // 部署配置
   deploy: {
     type: 'docker' | 'war' | 'jar' | 'k8s';
@@ -100,6 +111,8 @@ export interface BuildRequest {
   projectName: string;
   buildType: 'full' | 'backend' | 'frontend';
   callbackUrl?: string;
+  transferMode?: 'maven' | 'share'; // 传输方式：maven私库 或 文件共享
+  sharePath?: string; // 文件共享路径（Windows共享目录）
 }
 
 export interface BuildResponse {
@@ -109,6 +122,9 @@ export interface BuildResponse {
   backendArtifact?: ArtifactInfo;
   frontendArtifact?: ArtifactInfo;
   buildLog?: string;
+  artifactUrl?: string;
+  transferMode?: 'maven' | 'share'; // 传输方式
+  shareFilePath?: string; // 文件共享路径（编译后的文件路径）
 }
 
 export interface ArtifactInfo {
