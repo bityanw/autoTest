@@ -1,0 +1,41 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: test-platform
+
+# Windows Agent配置
+windows:
+  agent:
+    url: http://192.168.1.100:8081
+
+# Maven私服配置
+maven:
+  repo:
+    url: http://nexus.company.com/repository/maven-releases/
+
+# SVN配置
+svn:
+  project:
+    path: C:/svn/project
+
+# Docker配置
+docker:
+  network: autotest-network
+
+# 应用配置
+app:
+  port: 8888
+  url: http://localhost:8888
+
+# Playwright配置
+playwright:
+  workspace: /opt/playwright-tests
+
+# 日志配置
+logging:
+  level:
+    com.autotest.platform: INFO
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"

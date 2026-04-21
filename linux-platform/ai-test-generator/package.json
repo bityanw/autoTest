@@ -1,0 +1,16 @@
+{
+  "name": "ai-test-generator",
+  "version": "1.0.0",
+  "description": "AI自动生成Playwright测试脚本",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node src/index.js",
+    "generate": "node src/generator.js"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.20.0",
+    "axios": "^1.6.0",
+    "cheerio": "^1.0.0-rc.12",
+    "fs-extra": "^11.2.0"
+  }
+}

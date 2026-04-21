@@ -1,0 +1,20 @@
+server:
+  port: 8081
+
+spring:
+  application:
+    name: windows-build-agent
+
+# 构建配置
+build:
+  # 工作目录
+  workspace: C:/build-workspace
+  # 构建超时时间（秒）
+  timeout: 1800
+
+# 日志配置
+logging:
+  level:
+    com.autotest.agent: INFO
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
